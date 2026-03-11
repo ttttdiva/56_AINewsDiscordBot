@@ -4,6 +4,6 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$SCRIPT_DIR"
 
-MODE="${1:-schedule}"
+MODE="${1:-manual}"
 
 python -m src.main --mode "$MODE"

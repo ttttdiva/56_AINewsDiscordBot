@@ -5,7 +5,7 @@ set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
 if "%~1"=="" (
-    set "MODE=schedule"
+    set "MODE=manual"
 ) else (
     set "MODE=%~1"
 )

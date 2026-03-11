@@ -19,10 +19,13 @@
 - 同日再実行時の重複投稿スキップを確認
 - テスト 7 件を追加し、`python -m pytest` で全件通過
 - `README.md` と `docs/operations.md` を実装内容に更新
+- `run.bat` / `run.sh` の既定モードを `manual` に変更し、定期実行で待機し続けないよう修正
+- `DISCORD_CHANNEL_ID` のハードコード既定値を削除し、public 公開向けに tracked files のローカル依存記述を整理
 
 ## In Progress
 
 - 実運用での検索品質調整
+- public 公開前の最終整理
 
 ## Todo
 

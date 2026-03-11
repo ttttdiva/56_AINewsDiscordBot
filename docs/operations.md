@@ -38,4 +38,5 @@
 
 - Windows タスク スケジューラから `run.bat` を呼ぶ
 - Linux/macOS の cron や systemd timer から `run.sh` を呼ぶ
-- 引数を省略すると `schedule` モードで起動する
+- 引数を省略すると `manual` モードで起動する
+- `schedule` は常駐プロセス向けで、起動後は指定時刻まで待機し続ける

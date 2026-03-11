@@ -49,6 +49,12 @@ class AppRunner:
         digest_id: int | None = None
 
         try:
+            if mode is not RunMode.DRY_RUN:
+                if self._settings.discord_channel_id is None:
+                    raise RuntimeError("DISCORD_CHANNEL_ID is not configured.")
+                if not self._settings.discord_bot_token:
+                    raise RuntimeError("DISCORD_BOT_TOKEN is not configured.")
+
             existing_digest = self._repository.get_digest_by_date(digest_date)
             if mode is not RunMode.DRY_RUN and existing_digest and existing_digest["status"] == "posted":
                 logger.info("Digest already posted for %s. Skipping.", digest_date.isoformat())

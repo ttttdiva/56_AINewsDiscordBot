@@ -28,9 +28,7 @@ Discord に毎日 1 回、X 上の AI 関連ニュース要約を投稿する Bo
 1. 依存関係を入れる
    `python -m pip install -e .[dev]`
 2. `.env.sample` を必要に応じて更新する
-3. このリポジトリ直下の `.env` に `XAI_API_KEY` と `DISCORD_BOT_TOKEN` を設定する
-
-`DISCORD_CHANNEL_ID` は `1481265352032915506` を既定で使います。
+3. このリポジトリ直下の `.env` に `XAI_API_KEY`、`DISCORD_BOT_TOKEN`、`DISCORD_CHANNEL_ID` を設定する
 
 ## 実行方法
 
@@ -49,7 +47,7 @@ Discord に毎日 1 回、X 上の AI 関連ニュース要約を投稿する Bo
   `./run.sh manual`
   `./run.sh schedule`
 
-引数を省略した場合、`run.bat` と `run.sh` はどちらも `schedule` で起動します。
+引数を省略した場合、`run.bat` と `run.sh` はどちらも `manual` で起動します。`schedule` は常駐して指定時刻まで待機するモードです。
 
 ## 生成物
 

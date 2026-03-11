@@ -19,12 +19,11 @@
 - MVP は 1 サーバー 1 チャンネル想定でよい
 - まずは slash command よりも定期実行と安定運用を優先する
 
-## 参考にする既存リポジトリ
+## 参考実装の扱い
 
-- テンプレート構成: `C:\nk\00_Template_PythonTool`
-- Discord Bot の設定導線: `C:\nk\41_AoiTalk\docs\DISCORD_BOT_SETUP.md`
-- Discord Bot の起動と intents の持ち方: `C:\nk\41_AoiTalk\src\bot\discord_bot.py`
-- Grok x_search の API 呼び出し: `C:\nk\deploy\x-search-mcp\src\api-client.ts`
+- 必要なら既存の Python ツール構成や `discord.py` の一般的な実装パターンを参考にしてよい
+- ただし、このリポジトリの実行時依存はこのリポジトリ内に閉じる
+- 外部リポジトリの設定ファイルや secrets に依存しない
 
 ## 実装時の優先順位
 

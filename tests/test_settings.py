@@ -22,3 +22,18 @@ def test_settings_validate_timezone() -> None:
         pass
     else:
         raise AssertionError("Expected invalid timezone to fail validation")
+
+
+def test_settings_allow_missing_discord_channel_id() -> None:
+    settings = AppSettings()
+
+    assert settings.discord_channel_id is None
+
+
+def test_settings_reject_invalid_discord_channel_id() -> None:
+    try:
+        AppSettings(DISCORD_CHANNEL_ID="0")
+    except ValidationError:
+        pass
+    else:
+        raise AssertionError("Expected invalid Discord channel id to fail validation")

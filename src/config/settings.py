@@ -12,8 +12,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 LOCAL_ENV_PATH = ROOT_DIR / ".env"
-DEFAULT_DISCORD_CHANNEL_ID = 1481265352032915506
-
 _SETTINGS_CACHE: "AppSettings | None" = None
 
 
@@ -81,7 +79,7 @@ class AppSettings(BaseSettings):
     grok_timeout_seconds: int = Field(default=180, alias="GROK_TIMEOUT_SECONDS")
 
     discord_bot_token: str | None = Field(default=None, alias="DISCORD_BOT_TOKEN")
-    discord_channel_id: int = Field(default=DEFAULT_DISCORD_CHANNEL_ID, alias="DISCORD_CHANNEL_ID")
+    discord_channel_id: int | None = Field(default=None, alias="DISCORD_CHANNEL_ID")
 
     bot_timezone: str = Field(default="Asia/Tokyo", alias="BOT_TIMEZONE")
     daily_post_time: time = Field(default=time(8, 0), alias="DAILY_POST_TIME")
@@ -151,7 +149,9 @@ class AppSettings(BaseSettings):
 
     @field_validator("discord_channel_id")
     @classmethod
-    def validate_channel_id(cls, value: int) -> int:
+    def validate_channel_id(cls, value: int | None) -> int | None:
+        if value is None:
+            return value
         if value <= 0:
             raise ValueError("DISCORD_CHANNEL_ID must be a positive integer")
         return value

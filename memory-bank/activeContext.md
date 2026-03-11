@@ -7,11 +7,12 @@
 - MVP を最後まで実装した
 - Grok API の `x_search` 直呼びで AI ニュース収集が動作する
 - `dry-run` で Markdown と JSON artifact を `data/raw/` に保存できる
-- `manual` で Discord チャンネル `1481265352032915506` への投稿まで確認した
+- `manual` で Discord への投稿まで確認した
 - 同日の再実行では SQLite を見て二重投稿をスキップする
-- `schedule` モードの骨組みも追加済み
+- `schedule` モードの骨組みも追加済み。ラッパーの既定値は `manual` にして常駐待機を避ける
 - 実行時設定はこのリポジトリ直下の `.env` とプロセス環境変数だけを読む
 - 過去 7 日の投稿済みニュースを Grok に一括で見せて、`new_event` / `duplicate_event` / `event_update` を判定する実装を追加した
+- public 公開向けに、実運用の Discord チャンネル ID を既定値から外し、tracked files のローカル環境依存記述が残っていないことを確認した
 
 ## 直近でやること
 
