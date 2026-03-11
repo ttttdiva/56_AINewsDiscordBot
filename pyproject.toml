@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ainews-discord-bot"
+version = "0.1.0"
+description = "Daily AI news Discord bot powered by Grok x_search."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "apscheduler>=3.10,<4",
+  "discord.py>=2.5,<3",
+  "httpx>=0.28,<1",
+  "pydantic>=2.8,<3",
+  "pydantic-settings>=2.4,<3",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
