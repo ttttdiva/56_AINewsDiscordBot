@@ -20,5 +20,6 @@ def test_render_prompt_template_formats_values() -> None:
         excluded_handles="none",
     )
 
-    assert "2026-03-10 to 2026-03-11" in rendered
+    assert "Time window start (inclusive): 2026-03-10" in rendered
+    assert "Time window end (exclusive): 2026-03-11" in rendered
     assert "Target query: OpenAI" in rendered

@@ -19,7 +19,8 @@ class NewsCollector:
         self._grok_client = grok_client
 
     async def collect(self, digest_date: date) -> CollectionResult:
-        from_date = digest_date - timedelta(days=self._settings.search_lookback_days)
+        lookback_days = max(1, self._settings.search_lookback_days)
+        from_date = digest_date - timedelta(days=lookback_days - 1)
         to_date = digest_date + timedelta(days=1)
 
         candidate_count = max(

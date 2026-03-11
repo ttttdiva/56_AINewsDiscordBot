@@ -4,12 +4,14 @@
 
 - `dry-run`
   - Discord へは送信しない
+  - `--date` 未指定時は前日分の digest を生成する
   - `data/raw/` にレスポンス、正規化 JSON、Markdown を保存する
 - `manual`
-  - Grok API で収集し、そのまま Discord へ投稿する
+  - 既定では前日分を Grok API で収集し、そのまま Discord へ投稿する
   - 同日の digest が `posted` 状態なら再投稿しない
 - `schedule`
   - `BOT_TIMEZONE` と `DAILY_POST_TIME` に従って常駐実行する
+  - 指定時刻になったら前日分の digest を投稿する
 
 ## 永続化
 
@@ -33,6 +35,7 @@
 3. `*-dedupe.json` に重複判定結果が保存されることを確認
 3. `python -m src.main --mode manual`
 4. Discord 投稿後、同じコマンドで再実行しスキップされることを確認
+5. 必要なら `--date YYYY-MM-DD` を付けて過去日付の digest を再生成する
 
 ## 定期実行
 

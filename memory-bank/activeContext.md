@@ -13,6 +13,10 @@
 - 実行時設定はこのリポジトリ直下の `.env` とプロセス環境変数だけを読む
 - 過去 7 日の投稿済みニュースを Grok に一括で見せて、`new_event` / `duplicate_event` / `event_update` を判定する実装を追加した
 - public 公開向けに、実運用の Discord チャンネル ID を既定値から外し、tracked files のローカル環境依存記述が残っていないことを確認した
+- 日次 digest の Markdown は固定見出し `M/D AIニュース` にし、`概要` や `トピック` セクションを出さずに本題から始める形へ変更した
+- `SEARCH_LOOKBACK_DAYS=1` は当日分のみを検索する意味に修正した
+- `manual` / `dry-run` では `--date YYYY-MM-DD` で対象日付を指定できるようにした
+- date 未指定時の既定対象日は前日に変更した。日刊 digest は前日分をまとめる前提
 
 ## 直近でやること
 

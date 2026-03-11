@@ -1,5 +1,8 @@
-Search for recent AI news on X.
-Time window: {from_date} to {to_date}.
+Search for AI news on X for the exact time window below.
+Time window start (inclusive): {from_date}
+Time window end (exclusive): {to_date}
+Only include developments first reported or materially updated within this window.
+Do not pad the output with older stories just to fill the count.
 Target query: {query}
 Preferred summary language: {language}
 Return {candidate_count} items or fewer, ranked by importance.

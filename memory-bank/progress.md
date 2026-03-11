@@ -21,6 +21,10 @@
 - `README.md` と `docs/operations.md` を実装内容に更新
 - `run.bat` / `run.sh` の既定モードを `manual` に変更し、定期実行で待機し続けないよう修正
 - `DISCORD_CHANNEL_ID` のハードコード既定値を削除し、public 公開向けに tracked files のローカル依存記述を整理
+- 日次 digest の Markdown フォーマットを簡素化し、固定見出しと本文直行の形に修正
+- `SEARCH_LOOKBACK_DAYS=1` の検索窓を「当日だけ」に修正し、前日ニュースが混ざる挙動を解消
+- `manual` / `dry-run` 用に `--date YYYY-MM-DD` の対象日付指定を追加
+- date 未指定時は前日分の digest を作るよう既定動作を変更
 
 ## In Progress
 

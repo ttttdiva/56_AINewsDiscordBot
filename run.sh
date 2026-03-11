@@ -6,4 +6,8 @@ cd "$SCRIPT_DIR"
 
 MODE="${1:-manual}"
 
-python -m src.main --mode "$MODE"
+if [ "${2:-}" = "" ]; then
+  python -m src.main --mode "$MODE"
+else
+  python -m src.main --mode "$MODE" --date "$2"
+fi

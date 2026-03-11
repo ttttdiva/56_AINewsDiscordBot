@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from datetime import date
 from typing import Sequence
 
 from pydantic import ValidationError
@@ -22,18 +23,25 @@ def build_parser() -> argparse.ArgumentParser:
         choices=[mode.value for mode in RunMode],
         help="Override the run mode from APP_MODE.",
     )
+    parser.add_argument(
+        "--date",
+        type=date.fromisoformat,
+        help="Override digest date with YYYY-MM-DD for dry-run/manual.",
+    )
     return parser
 
 
-def run(mode: RunMode, settings: AppSettings) -> int:
+def run(mode: RunMode, settings: AppSettings, target_date: date | None = None) -> int:
     runner = AppRunner(settings)
+    effective_target_date = runner.resolve_digest_date(target_date) if mode is not RunMode.SCHEDULE else None
 
     logger.info(
-        "Loaded configuration for mode=%s timezone=%s post_time=%s channel=%s",
+        "Loaded configuration for mode=%s timezone=%s post_time=%s channel=%s target_date=%s",
         mode.value,
         settings.bot_timezone,
         settings.daily_post_time.strftime("%H:%M"),
         settings.discord_channel_id,
+        effective_target_date.isoformat() if effective_target_date else "scheduler",
     )
 
     if mode is RunMode.SCHEDULE:
@@ -41,7 +49,7 @@ def run(mode: RunMode, settings: AppSettings) -> int:
         scheduler.start()
         return 0
 
-    return runner.run_sync(mode)
+    return runner.run_sync(mode, target_date=target_date)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -57,7 +65,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     configure_logging(settings.log_level)
     mode = RunMode(args.mode) if args.mode else settings.app_mode
-    return run(mode, settings)
+    if mode is RunMode.SCHEDULE and args.date is not None:
+        print("--date cannot be used with schedule mode.", file=sys.stderr)
+        return 2
+    return run(mode, settings, target_date=args.date)
 
 
 if __name__ == "__main__":

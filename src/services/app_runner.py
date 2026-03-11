@@ -4,7 +4,7 @@ import asyncio
 import json
 import logging
 import threading
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from src.bot.discord_publisher import DiscordPublisher
@@ -33,18 +33,18 @@ class AppRunner:
         self._builder = DigestBuilder()
         self._run_lock = threading.Lock()
 
-    def run_sync(self, mode: RunMode) -> int:
+    def run_sync(self, mode: RunMode, target_date: date | None = None) -> int:
         if not self._run_lock.acquire(blocking=False):
             logger.warning("Another run is already in progress. Skipping %s.", mode.value)
             return 1
 
         try:
-            return asyncio.run(self._run_once(mode))
+            return asyncio.run(self._run_once(mode, target_date=target_date))
         finally:
             self._run_lock.release()
 
-    async def _run_once(self, mode: RunMode) -> int:
-        digest_date = datetime.now(self._settings.timezone).date()
+    async def _run_once(self, mode: RunMode, target_date: date | None = None) -> int:
+        digest_date = self.resolve_digest_date(target_date)
         run_id = self._repository.start_run(mode.value)
         digest_id: int | None = None
 
@@ -102,6 +102,12 @@ class AppRunner:
                 self._repository.mark_digest_failed(digest_id, str(exc))
             self._repository.finish_run(run_id, RunStatus.FAILED, str(exc))
             return 1
+
+    def resolve_digest_date(self, target_date: date | None, current_date: date | None = None) -> date:
+        if target_date is not None:
+            return target_date
+        base_date = current_date or datetime.now(self._settings.timezone).date()
+        return base_date - timedelta(days=1)
 
     def _write_artifacts(
         self,

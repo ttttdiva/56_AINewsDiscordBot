@@ -10,7 +10,11 @@ if "%~1"=="" (
     set "MODE=%~1"
 )
 
-python -m src.main --mode %MODE%
+if "%~2"=="" (
+    python -m src.main --mode %MODE%
+) else (
+    python -m src.main --mode %MODE% --date %~2
+)
 set "EXIT_CODE=%ERRORLEVEL%"
 
 endlocal & exit /b %EXIT_CODE%

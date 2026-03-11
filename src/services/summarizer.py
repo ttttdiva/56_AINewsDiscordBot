@@ -7,6 +7,7 @@ from src.models.news import DigestDraft, DigestItem, NewsPost
 
 class DigestBuilder:
     def build(self, digest_date: date, headline: str, overview: str, posts: list[NewsPost]) -> DigestDraft:
+        display_headline = self._build_headline(digest_date)
         items = [
             DigestItem(
                 rank_order=index,
@@ -20,51 +21,46 @@ class DigestBuilder:
             )
             for index, post in enumerate(posts, start=1)
         ]
-        markdown = self._build_markdown(digest_date, headline, overview, items)
+        markdown = self._build_markdown(digest_date, display_headline, overview, items)
         return DigestDraft(
             digest_date=digest_date,
-            headline=headline,
+            headline=display_headline,
             overview=overview,
             items=items,
             markdown=markdown,
         )
 
     def _build_markdown(self, digest_date: date, headline: str, overview: str, items: list[DigestItem]) -> str:
-        lines = [
-            f"# {headline}",
-            f"日付: {digest_date.isoformat()}",
-            "",
-            "## 概要",
-            overview.strip(),
-            "",
-        ]
+        lines = [f"# {headline}", ""]
 
         if not items:
             lines.extend(
                 [
-                    "## トピック",
                     "本日の条件では、新規の主要 AI ニュースは見つかりませんでした。",
                 ]
             )
             return "\n".join(lines).strip()
 
-        lines.append("## トピック")
         for item in items:
             lines.extend(
                 [
-                    f"### {item.rank_order}. {item.title}",
+                    f"{item.rank_order}. {item.title}",
                     item.summary.strip(),
-                    f"Source: {item.post_url}" if item.post_url else "Source: unavailable",
+                    f"X: {item.post_url}" if item.post_url else "X: unavailable",
                 ]
             )
             if item.author_handle:
-                lines.append(f"Handle: {item.author_handle}")
+                lines.append(f"投稿元: {item.author_handle}")
             if item.selection_reason:
-                lines.append(f"Why it matters: {item.selection_reason}")
+                lines.append(f"ポイント: {item.selection_reason}")
             if item.source.dedupe_decision.value == "event_update":
-                lines.append("Update: 続報として採用")
+                lines.append("続報: 新情報があるため採用")
                 if item.source.new_facts:
-                    lines.append(f"New facts: {' / '.join(item.source.new_facts)}")
+                    lines.append(f"新情報: {' / '.join(item.source.new_facts)}")
             lines.append("")
 
         return "\n".join(lines).strip()
+
+    @staticmethod
+    def _build_headline(digest_date: date) -> str:
+        return f"{digest_date.month}/{digest_date.day} AIニュース"

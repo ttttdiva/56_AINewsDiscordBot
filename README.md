@@ -5,8 +5,8 @@ Discord に毎日 1 回、X 上の AI 関連ニュース要約を投稿する Bo
 ## 現在の状態
 
 - `dry-run`: Grok API でニュース収集し、Markdown と生レスポンスを `data/raw/` に保存
-- `manual`: Grok API で収集し、Discord の指定チャンネルへ投稿し、SQLite に履歴保存
-- `schedule`: JST 指定時刻で日次実行
+- `manual`: 既定では前日分のニュースを収集し、Discord の指定チャンネルへ投稿し、SQLite に履歴保存
+- `schedule`: JST 指定時刻で前日分の日次 digest を実行
 - 同日の再実行時は、投稿済み digest を再送しない
 - 過去 7 日分の投稿済みニュースと Grok で照合し、同一イベントの再掲を除外する
 
@@ -36,18 +36,22 @@ Discord に毎日 1 回、X 上の AI 関連ニュース要約を投稿する Bo
   `python -m src.main --mode dry-run`
 - 今すぐ Discord へ投稿
   `python -m src.main --mode manual`
+- 特定日付のニュースで実行
+  `python -m src.main --mode manual --date 2026-03-11`
 - 常駐して毎日投稿
   `python -m src.main --mode schedule`
 - Windows 用ラッパー
   `run.bat dry-run`
   `run.bat manual`
+  `run.bat manual 2026-03-11`
   `run.bat schedule`
 - Unix 系ラッパー
   `./run.sh dry-run`
   `./run.sh manual`
+  `./run.sh manual 2026-03-11`
   `./run.sh schedule`
 
-引数を省略した場合、`run.bat` と `run.sh` はどちらも `manual` で起動します。`schedule` は常駐して指定時刻まで待機するモードです。
+引数を省略した場合、`run.bat` と `run.sh` はどちらも `manual` で起動し、既定では前日分のニュースを投稿します。`schedule` は常駐して指定時刻まで待機するモードです。
 
 ## 生成物
 
