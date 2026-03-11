@@ -1,0 +1,9 @@
+Compare today's AI news candidates against already posted candidates from the last {lookback_days} days.
+
+Today's candidates:
+{today_items_json}
+
+Previously posted candidates:
+{past_items_json}
+
+Return one result for every today candidate.

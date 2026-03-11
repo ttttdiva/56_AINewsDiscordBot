@@ -6,7 +6,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.models.news import DigestDraft, DigestStatus, RunStatus
+from src.models.news import DigestDraft, DigestStatus, EventDeduplicationResult, HistoricalNewsItem, RunStatus
 
 
 def utcnow_iso() -> str:
@@ -72,6 +72,18 @@ class SQLiteStateRepository:
                     selection_reason TEXT,
                     UNIQUE(digest_message_id, source_post_id)
                 );
+
+                CREATE TABLE IF NOT EXISTS event_dedupe_results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id INTEGER NOT NULL,
+                    candidate_post_url TEXT NOT NULL,
+                    decision TEXT NOT NULL,
+                    matched_past_post_url TEXT,
+                    matched_past_digest_date TEXT,
+                    confidence REAL NOT NULL,
+                    reason TEXT NOT NULL,
+                    new_facts_json TEXT NOT NULL
+                );
                 """
             )
 
@@ -130,6 +142,38 @@ class SQLiteStateRepository:
             ).fetchone()
         return dict(row) if row else None
 
+    def get_recent_posted_items(self, *, before_digest_date: date, lookback_days: int) -> list[HistoricalNewsItem]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT
+                    dm.digest_date,
+                    sp.id AS source_post_id,
+                    sp.title,
+                    sp.summary,
+                    sp.selection_reason,
+                    sp.post_id,
+                    sp.post_url,
+                    sp.author_handle,
+                    sp.content_excerpt
+                FROM digest_messages dm
+                INNER JOIN digest_items di ON di.digest_message_id = dm.id
+                INNER JOIN source_posts sp ON sp.id = di.source_post_id
+                WHERE dm.status = ?
+                  AND dm.digest_date < ?
+                  AND dm.digest_date >= date(?, ?)
+                ORDER BY dm.digest_date DESC, di.rank_order ASC
+                """,
+                (
+                    DigestStatus.POSTED.value,
+                    before_digest_date.isoformat(),
+                    before_digest_date.isoformat(),
+                    f"-{lookback_days} day",
+                ),
+            ).fetchall()
+
+        return [HistoricalNewsItem(**dict(row)) for row in rows]
+
     def upsert_source_posts(self, run_id: int, posts: list[Any]) -> dict[str, int]:
         source_post_ids: dict[str, int] = {}
         with self._connect() as connection:
@@ -173,6 +217,30 @@ class SQLiteStateRepository:
                     )
                 source_post_ids[post.source_key] = source_post_id
         return source_post_ids
+
+    def save_event_dedupe_results(self, run_id: int, results: list[EventDeduplicationResult]) -> None:
+        with self._connect() as connection:
+            connection.execute("DELETE FROM event_dedupe_results WHERE run_id = ?", (run_id,))
+            for result in results:
+                connection.execute(
+                    """
+                    INSERT INTO event_dedupe_results (
+                        run_id, candidate_post_url, decision, matched_past_post_url,
+                        matched_past_digest_date, confidence, reason, new_facts_json
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        run_id,
+                        str(result.today_post_url),
+                        result.decision.value,
+                        str(result.matched_past_post_url) if result.matched_past_post_url else None,
+                        result.matched_past_digest_date.isoformat() if result.matched_past_digest_date else None,
+                        result.confidence,
+                        result.reason,
+                        json.dumps(result.new_facts, ensure_ascii=False),
+                    ),
+                )
 
     def save_digest(self, draft: DigestDraft, channel_id: int) -> int:
         existing = self.get_digest_by_date(draft.digest_date)

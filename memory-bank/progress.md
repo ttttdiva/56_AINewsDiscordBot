@@ -9,7 +9,9 @@
 - 実行時設定がこのリポジトリの `.env` とプロセス環境変数だけで完結するよう修正
 - Grok Responses API + `x_search` のクライアントを実装
 - strict JSON でのニュース収集、正規化、重複排除、Markdown 生成を実装
+- 過去 7 日分とのイベント単位重複判定を Grok 1 回で行う dedupe フローを実装
 - SQLite に run、source post、digest、digest item を保存するよう実装
+- `event_dedupe_results` テーブルを追加し、判定結果を保存するよう実装
 - Discord 投稿と 2000 文字分割送信を実装
 - APScheduler ベースの日次スケジューラを実装
 - `dry-run` を実 API で確認
@@ -25,6 +27,7 @@
 ## Todo
 
 - 必要なら検索クエリのチューニング
+- 必要なら dedupe プロンプトのチューニング
 - 必要ならノイズ除去ルールの強化
 - 必要なら投稿フォーマット改善
 
@@ -33,6 +36,7 @@
 - `x_search` の返却品質は日ごとに揺れる
 - Grok の strict JSON 出力がたまに不完全になる可能性がある
 - 外部 API 応答時間が長く、実行が 1 分超になることがある
+- イベント重複判定の精度はプロンプトと過去 7 日の候補品質に依存する
 
 ## Next Milestone
 

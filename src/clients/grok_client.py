@@ -111,22 +111,16 @@ class GrokClient:
     def __init__(self, settings: AppSettings) -> None:
         self._settings = settings
 
-    async def search_ai_news(
+    async def create_response(
         self,
         *,
         system_prompt: str,
         user_prompt: str,
-        from_date: str,
-        to_date: str,
+        tools: list[dict[str, Any]] | None = None,
+        max_output_tokens: int = 1500,
     ) -> tuple[dict[str, Any], str]:
         if not self._settings.xai_api_key:
             raise GrokAPIError("XAI_API_KEY is not configured.")
-
-        tool: dict[str, Any] = {"type": "x_search", "from_date": from_date, "to_date": to_date}
-        if self._settings.allowed_x_handles:
-            tool["allowed_x_handles"] = self._settings.allowed_x_handles
-        if self._settings.excluded_x_handles:
-            tool["excluded_x_handles"] = self._settings.excluded_x_handles
 
         payload = {
             "model": self._settings.xai_grok_model,
@@ -134,10 +128,11 @@ class GrokClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "tools": [tool],
             "temperature": 0.1,
-            "max_output_tokens": 1500,
+            "max_output_tokens": max_output_tokens,
         }
+        if tools:
+            payload["tools"] = tools
 
         headers = {
             "Authorization": f"Bearer {self._settings.xai_api_key}",
@@ -166,3 +161,23 @@ class GrokClient:
 
         logger.debug("Grok response text: %s", text)
         return response_payload, text
+
+    async def search_ai_news(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        from_date: str,
+        to_date: str,
+    ) -> tuple[dict[str, Any], str]:
+        tool: dict[str, Any] = {"type": "x_search", "from_date": from_date, "to_date": to_date}
+        if self._settings.allowed_x_handles:
+            tool["allowed_x_handles"] = self._settings.allowed_x_handles
+        if self._settings.excluded_x_handles:
+            tool["excluded_x_handles"] = self._settings.excluded_x_handles
+        return await self.create_response(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            tools=[tool],
+            max_output_tokens=1500,
+        )

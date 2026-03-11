@@ -29,9 +29,27 @@ def test_repository_upserts_posts_and_digest(tmp_path) -> None:
         markdown="# AI",
     )
     digest_id = repo.save_digest(draft, 12345)
+    repo.attach_digest_items(
+        digest_id,
+        source_ids,
+        [
+            type(
+                "Item",
+                (),
+                {
+                    "source": posts[0],
+                    "rank_order": 1,
+                    "selection_reason": None,
+                },
+            )()
+        ],
+    )
     repo.mark_digest_posted(digest_id, [111, 222])
 
     assert source_ids["1"] > 0
     digest = repo.get_digest_by_date(date(2026, 3, 11))
     assert digest is not None
     assert digest["status"] == "posted"
+    history = repo.get_recent_posted_items(before_digest_date=date(2026, 3, 12), lookback_days=7)
+    assert len(history) == 1
+    assert history[0].title == "A"

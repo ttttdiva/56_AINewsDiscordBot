@@ -96,6 +96,7 @@ class AppSettings(BaseSettings):
     x_search_language: str = Field(default="ja", alias="X_SEARCH_LANGUAGE")
     search_lookback_days: int = Field(default=1, alias="SEARCH_LOOKBACK_DAYS")
     digest_max_items: int = Field(default=5, alias="DIGEST_MAX_ITEMS")
+    event_lookback_days: int = Field(default=7, alias="EVENT_LOOKBACK_DAYS")
 
     state_db_path: Path = Field(default=Path("data/state.db"), alias="STATE_DB_PATH")
     raw_output_dir: Path = Field(default=Path("data/raw"), alias="RAW_OUTPUT_DIR")
@@ -155,7 +156,13 @@ class AppSettings(BaseSettings):
             raise ValueError("DISCORD_CHANNEL_ID must be a positive integer")
         return value
 
-    @field_validator("x_search_max_results", "grok_timeout_seconds", "search_lookback_days", "digest_max_items")
+    @field_validator(
+        "x_search_max_results",
+        "grok_timeout_seconds",
+        "search_lookback_days",
+        "digest_max_items",
+        "event_lookback_days",
+    )
     @classmethod
     def validate_positive_int(cls, value: int) -> int:
         if value <= 0:

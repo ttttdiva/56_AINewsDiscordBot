@@ -8,36 +8,9 @@ from typing import Any
 from src.clients.grok_client import GrokClient, extract_json_object
 from src.config.settings import AppSettings
 from src.models.news import CollectionResult, NewsPost
+from src.prompts.loader import load_prompt_template, render_prompt_template
 
 logger = logging.getLogger(__name__)
-
-SYSTEM_PROMPT = """
-You are an AI news editor for a Discord digest.
-Use x_search to find high-signal AI-related news on X.
-Focus on product launches, model releases, benchmarks, funding, policy, research, outages, and major partnerships.
-Ignore memes, engagement bait, giveaways, reposts, and low-signal promotion unless the event is materially important.
-Return strict JSON only.
-Schema:
-{
-  "headline": "string",
-  "overview": "2-4 short Japanese sentences",
-  "items": [
-    {
-      "rank": 1,
-      "title": "short Japanese headline",
-      "summary": "1-2 short Japanese sentences",
-      "selection_reason": "why it matters in Japanese",
-      "post_id": "string or null",
-      "post_url": "full X status URL",
-      "author_handle": "@handle or null",
-      "posted_at": "ISO-8601 datetime or null",
-      "content_excerpt": "short excerpt from the source post"
-    }
-  ]
-}
-Do not wrap JSON in markdown fences.
-Every item must include a direct X status URL.
-""".strip()
 
 
 class NewsCollector:
@@ -54,8 +27,9 @@ class NewsCollector:
             min(self._settings.x_search_max_results, self._settings.digest_max_items + 1),
         )
         user_prompt = self._build_user_prompt(from_date, to_date, candidate_count)
+        system_prompt = load_prompt_template("news_collection_system.txt")
         raw_payload, raw_text = await self._grok_client.search_ai_news(
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             user_prompt=user_prompt,
             from_date=from_date.isoformat(),
             to_date=to_date.isoformat(),
@@ -80,15 +54,15 @@ class NewsCollector:
     def _build_user_prompt(self, from_date: date, to_date: date, candidate_count: int) -> str:
         allowed_handles = ", ".join(f"@{handle}" for handle in self._settings.allowed_x_handles) or "none"
         excluded_handles = ", ".join(f"@{handle}" for handle in self._settings.excluded_x_handles) or "none"
-        return (
-            f"Search for recent AI news on X.\n"
-            f"Time window: {from_date.isoformat()} to {to_date.isoformat()}.\n"
-            f"Target query: {self._settings.ai_news_query}\n"
-            f"Preferred summary language: {self._settings.x_search_language}\n"
-            f"Return {candidate_count} items or fewer, ranked by importance.\n"
-            f"Allowed handles: {allowed_handles}\n"
-            f"Excluded handles: {excluded_handles}\n"
-            "Prioritize concrete news developments over opinions.\n"
+        return render_prompt_template(
+            "news_collection_user.txt",
+            from_date=from_date.isoformat(),
+            to_date=to_date.isoformat(),
+            query=self._settings.ai_news_query,
+            language=self._settings.x_search_language,
+            candidate_count=candidate_count,
+            allowed_handles=allowed_handles,
+            excluded_handles=excluded_handles,
         )
 
     def _normalize_items(self, raw_items: Any, raw_payload: dict[str, Any]) -> list[NewsPost]:

@@ -10,8 +10,9 @@ from pathlib import Path
 from src.bot.discord_publisher import DiscordPublisher
 from src.clients.grok_client import GrokClient
 from src.config.settings import AppSettings, RunMode
-from src.models.news import CollectionResult, DigestDraft, RunStatus
+from src.models.news import CollectionResult, DigestDraft, EventDeduplicationResult, RunStatus
 from src.services.collector import NewsCollector
+from src.services.event_deduper import EventDeduper
 from src.services.filtering import NewsFilter
 from src.services.summarizer import DigestBuilder
 from src.storage.sqlite_repository import SQLiteStateRepository
@@ -25,7 +26,9 @@ class AppRunner:
         self._settings.ensure_runtime_dirs()
         self._repository = SQLiteStateRepository(settings.state_db_abspath)
         self._repository.initialize()
-        self._collector = NewsCollector(settings, GrokClient(settings))
+        self._grok_client = GrokClient(settings)
+        self._collector = NewsCollector(settings, self._grok_client)
+        self._deduper = EventDeduper(self._grok_client, settings.event_lookback_days)
         self._filter = NewsFilter(settings.digest_max_items)
         self._builder = DigestBuilder()
         self._run_lock = threading.Lock()
@@ -53,13 +56,22 @@ class AppRunner:
                 return 0
 
             collection = await self._collector.collect(digest_date)
-            selected_posts = self._filter.filter_posts(
+            candidate_posts = self._filter.filter_posts(
                 collection.items,
                 self._repository.get_posted_source_keys(),
             )
+            historical_items = self._repository.get_recent_posted_items(
+                before_digest_date=digest_date,
+                lookback_days=self._settings.event_lookback_days,
+            )
+            dedupe_outcome = await self._deduper.dedupe_against_history(
+                today_posts=candidate_posts,
+                historical_items=historical_items,
+            )
+            selected_posts = dedupe_outcome.kept_posts
             draft = self._builder.build(digest_date, collection.headline, collection.overview, selected_posts)
 
-            artifact_paths = self._write_artifacts(collection, draft, mode)
+            artifact_paths = self._write_artifacts(collection, draft, dedupe_outcome.results, mode)
             logger.info("Artifacts written to %s", ", ".join(str(path) for path in artifact_paths))
 
             if mode is RunMode.DRY_RUN:
@@ -68,6 +80,7 @@ class AppRunner:
                 return 0
 
             source_post_ids = self._repository.upsert_source_posts(run_id, selected_posts)
+            self._repository.save_event_dedupe_results(run_id, dedupe_outcome.results)
             digest_id = self._repository.save_digest(draft, self._settings.discord_channel_id)
             self._repository.attach_digest_items(digest_id, source_post_ids, draft.items)
 
@@ -84,13 +97,20 @@ class AppRunner:
             self._repository.finish_run(run_id, RunStatus.FAILED, str(exc))
             return 1
 
-    def _write_artifacts(self, collection: CollectionResult, draft: DigestDraft, mode: RunMode) -> list[Path]:
+    def _write_artifacts(
+        self,
+        collection: CollectionResult,
+        draft: DigestDraft,
+        dedupe_results: list[EventDeduplicationResult],
+        mode: RunMode,
+    ) -> list[Path]:
         timestamp = datetime.now(self._settings.timezone).strftime("%Y%m%d-%H%M%S")
         stem = f"{timestamp}-{mode.value}"
         raw_dir = self._settings.raw_output_dir_abspath
         response_path = raw_dir / f"{stem}-response.json"
         normalized_path = raw_dir / f"{stem}-normalized.json"
         markdown_path = raw_dir / f"{stem}-digest.md"
+        dedupe_path = raw_dir / f"{stem}-dedupe.json"
 
         response_path.write_text(
             json.dumps(collection.raw_response_payload, ensure_ascii=False, indent=2),
@@ -101,4 +121,8 @@ class AppRunner:
             encoding="utf-8",
         )
         markdown_path.write_text(draft.markdown, encoding="utf-8")
-        return [response_path, normalized_path, markdown_path]
+        dedupe_path.write_text(
+            json.dumps([result.model_dump(mode="json") for result in dedupe_results], ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return [response_path, normalized_path, markdown_path, dedupe_path]

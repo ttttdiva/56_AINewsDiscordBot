@@ -1,0 +1,8 @@
+Search for recent AI news on X.
+Time window: {from_date} to {to_date}.
+Target query: {query}
+Preferred summary language: {language}
+Return {candidate_count} items or fewer, ranked by importance.
+Allowed handles: {allowed_handles}
+Excluded handles: {excluded_handles}
+Prioritize concrete news developments over opinions.

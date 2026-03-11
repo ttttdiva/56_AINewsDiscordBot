@@ -13,6 +13,7 @@
   - strict JSON で digest 候補を返させる
   - `from_date` / `to_date` をツール指定する
   - `allowed_x_handles` / `excluded_x_handles` を必要に応じて使う
+  - 収集後のイベント重複判定にも Responses API を追加で 1 回使う
 
 ### Discord API
 
@@ -30,6 +31,17 @@
 - `user_prompt`
 - `from_date`
 - `to_date`
+
+出力:
+- 生レスポンス JSON
+- 抽出済みテキスト
+
+### `GrokClient.create_response(...)`
+
+入力:
+- `system_prompt`
+- `user_prompt`
+- `tools` optional
 
 出力:
 - 生レスポンス JSON
@@ -53,6 +65,15 @@
 
 出力:
 - `DigestDraft`
+
+### `EventDeduper.dedupe_against_history(...)`
+
+入力:
+- `list[NewsPost]`
+- `list[HistoricalNewsItem]`
+
+出力:
+- `EventDeduplicationOutcome`
 
 ### `DiscordPublisher.publish(...)`
 

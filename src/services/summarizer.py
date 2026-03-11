@@ -61,6 +61,10 @@ class DigestBuilder:
                 lines.append(f"Handle: {item.author_handle}")
             if item.selection_reason:
                 lines.append(f"Why it matters: {item.selection_reason}")
+            if item.source.dedupe_decision.value == "event_update":
+                lines.append("Update: 続報として採用")
+                if item.source.new_facts:
+                    lines.append(f"New facts: {' / '.join(item.source.new_facts)}")
             lines.append("")
 
         return "\n".join(lines).strip()

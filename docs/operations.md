@@ -17,15 +17,25 @@
 - `source_posts`: 取得済みソース投稿
 - `digest_messages`: 日次 digest 本文と送信結果
 - `digest_items`: digest とソース投稿の対応
+- `event_dedupe_results`: その日の候補に対する `new_event` / `duplicate_event` / `event_update` 判定
 
 ## 再送ポリシー
 
 - 同じ日付の digest が `posted` ならスキップ
 - `failed` または未投稿なら再実行時に本文を上書きし直して再送する
+- さらに、過去 7 日分の投稿済みニュースを Grok に渡し、同一イベントの再掲は `duplicate_event` として除外する
+- 同一イベントでも新事実がある場合は `event_update` として採用する
 
 ## ローカル確認
 
 1. `python -m src.main --mode dry-run`
 2. `data/raw/` にファイルが出ることを確認
+3. `*-dedupe.json` に重複判定結果が保存されることを確認
 3. `python -m src.main --mode manual`
 4. Discord 投稿後、同じコマンドで再実行しスキップされることを確認
+
+## 定期実行
+
+- Windows タスク スケジューラから `run.bat` を呼ぶ
+- Linux/macOS の cron や systemd timer から `run.sh` を呼ぶ
+- 引数を省略すると `schedule` モードで起動する

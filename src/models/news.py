@@ -24,6 +24,12 @@ class DigestStatus(str, Enum):
     FAILED = "failed"
 
 
+class EventDecision(str, Enum):
+    NEW_EVENT = "new_event"
+    DUPLICATE_EVENT = "duplicate_event"
+    EVENT_UPDATE = "event_update"
+
+
 class NewsPost(BaseModel):
     rank: int | None = Field(default=None, ge=1)
     title: str = Field(min_length=1)
@@ -35,6 +41,12 @@ class NewsPost(BaseModel):
     posted_at: datetime | None = None
     content_excerpt: str = Field(min_length=1)
     collected_at: datetime = Field(default_factory=utcnow)
+    dedupe_decision: EventDecision = EventDecision.NEW_EVENT
+    dedupe_reason: str | None = None
+    dedupe_confidence: float | None = None
+    matched_past_post_url: HttpUrl | None = None
+    matched_past_digest_date: date | None = None
+    new_facts: list[str] = Field(default_factory=list)
     raw_payload: dict[str, Any] = Field(default_factory=dict)
 
     @property
@@ -100,3 +112,25 @@ class RunRecord(BaseModel):
     started_at: datetime = Field(default_factory=utcnow)
     finished_at: datetime | None = None
     error_message: str | None = None
+
+
+class HistoricalNewsItem(BaseModel):
+    digest_date: date
+    source_post_id: int
+    title: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+    selection_reason: str | None = None
+    post_id: str | None = None
+    post_url: HttpUrl | None = None
+    author_handle: str | None = None
+    content_excerpt: str = Field(min_length=1)
+
+
+class EventDeduplicationResult(BaseModel):
+    today_post_url: HttpUrl
+    decision: EventDecision
+    matched_past_post_url: HttpUrl | None = None
+    matched_past_digest_date: date | None = None
+    confidence: float = Field(ge=0.0, le=1.0)
+    reason: str = Field(min_length=1)
+    new_facts: list[str] = Field(default_factory=list)
