@@ -25,6 +25,7 @@
 - `SEARCH_LOOKBACK_DAYS=1` の検索窓を「当日だけ」に修正し、前日ニュースが混ざる挙動を解消
 - `manual` / `dry-run` 用に `--date YYYY-MM-DD` の対象日付指定を追加
 - date 未指定時は前日分の digest を作るよう既定動作を変更
+- Agent Guide / Skills 導入: `.agents/skills/`、`.claude/skills/`、`CLAUDE.md`、`GEMINI.md`、`memory-bank/debug-policy.md` を追加し、`AGENTS.md` を `CLAUDE.md` 参照に統一（2026-04-25）
 
 ## In Progress
 

@@ -1,0 +1,81 @@
+# Agent Guide
+
+必要なルールは長くても削らない。返答・ログ・コミットメッセージは必ず日本語で書く。
+
+## 最初に読む順序
+
+1. `memory-bank/projectbrief.md`
+2. `memory-bank/productContext.md`
+3. `memory-bank/systemPatterns.md`
+4. `memory-bank/techContext.md`
+5. `memory-bank/activeContext.md`
+6. `memory-bank/progress.md`
+7. `docs/implementation-plan.md`
+8. 必要に応じて `memory-bank/design-*.md`
+
+## 即時チェックリスト
+
+- 既存差分は勝手に戻さない。破壊的操作は事前承認を得る。
+- 文字化けと断定せず、必要なら `Get-Content -Encoding utf8` やバイト列で確認する。
+- `.env`、APIキー、Discord token、SQLite状態、`data/raw/` の生成物を不用意にコミットしない。
+- MCP 化はしない。X 検索は Grok API の `x_search` を直接使う前提を守る。
+- `docs/` はユーザー向けドキュメント、設計情報は `memory-bank/design-*.md` に置く。
+
+## 作業分類
+
+- 質問・調査・レビューは `/ask`。
+- ファイル変更を伴う作業は `/work`。
+- 実装・修正後の動作確認は `/debug`。
+- 統合は `/merge`。
+
+スキルは `.agents/skills/` と `.claude/skills/` に同じ内容で配置している。変更する場合は両方を同期する。
+
+## Memory Bank
+
+Memory Bank は引き継ぎノート。作業開始時は必ず上記6ファイルを読む。作業終了時は必ず `memory-bank/activeContext.md` と `memory-bank/progress.md` を更新する。
+
+仕様・前提・方針が変わった場合は、active/progress だけで済ませず、該当する恒久ファイルや `design-*.md` も更新する。`update memory bank` 指示時は全ファイルを再確認して差分を反映する。
+
+### 書き方の原則
+
+- 「現状 / 次のステップ / 判断・前提」を分ける。
+- 未来の自分が迷わず再開できる粒度で具体化する。
+- 事実と推測を分ける。推測は根拠を書く。
+
+### ファイルの役割
+
+- `projectbrief.md`: 目的、成功条件、非ゴール、スコープ、制約。
+- `productContext.md`: 想定ユーザー、主要ユースケース、UX要件、既存の痛み、受け入れ条件。
+- `systemPatterns.md`: 全体構成、主要フロー、データモデル、設計判断、運用パターン。
+- `techContext.md`: 技術スタック、実行方法、依存、制約、テスト/ビルド/デプロイ。
+- `activeContext.md`: 直近の作業、判断、次にやること、ブロッカー。
+- `progress.md`: 完了事項、進行中、未着手、課題/リスク、次のマイルストーン。
+- `design-*.md`: アーキテクチャ、DB、API、画面構成などの構造化設計書。
+
+## プロジェクト前提
+
+- Discord に毎日1回、X上のAI関連ニュース要約を投稿する Python Bot。
+- Grok API の `x_search` で収集し、SQLite で重複送信を防ぐ。
+- MVP は1サーバー1チャンネル想定。会話型Bot、音声入出力、Web UI、複数ワークスペース対応はスコープ外。
+- 実装時の優先順位は、設定ロード、Grok APIクライアント、収集と重複排除、要約生成、Discord投稿、スケジューラ、テストと運用手順。
+- 必要なら既存の Python ツール構成や `discord.py` の一般的な実装パターンを参考にしてよいが、実行時依存はこのリポジトリ内に閉じる。
+- 外部リポジトリの設定ファイルや secrets に依存しない。
+
+## 開発環境
+
+- Python は仮想環境を使い、依存は `pyproject.toml` を基準にする。
+- セットアップは `python -m pip install -e .[dev]`。
+- 基本実行は `python -m src.main --mode dry-run`、投稿は `python -m src.main --mode manual`、常駐は `python -m src.main --mode schedule`。
+- Windows ラッパーは `run.bat dry-run`、`run.bat manual`、`run.bat schedule`。
+- テストは `python -m pytest`。
+
+## Debug Policy
+
+`memory-bank/debug-policy.md` を参照する。外部API、Discord投稿、スケジューラ、SQLite重複判定、日付処理に関わる変更は `/debug` の要否を明示する。
+
+## Git
+
+- コミット前に `git status` を確認する。
+- コミットメッセージは日本語で簡潔に書く。
+- 「pushしろ」と言われた場合、未コミットの変更があれば確認を挟まずに `add`、`commit`、`push` を実行する。
+- バイナリファイルを不用意にコミットしない。

@@ -40,3 +40,9 @@
 - イベント重複判定はプロンプト品質に依存する
 - AI ニュースのランキングは Grok の返す rank に依存している
 - 本番運用では secrets の投入方法を別途決める必要がある
+
+## 2026-04-25 Agent Guide / Skills 導入
+
+- `00_Template_PythonTool` 由来の `.agents/skills/` と `.claude/skills/` を配置した。
+- `CLAUDE.md` を追加し、既存 `AGENTS.md` と新規 `GEMINI.md` は `CLAUDE.md` 参照に統一した。
+- `memory-bank/debug-policy.md` を追加し、文書変更のみのため実行デバッグは不要と判断した。
