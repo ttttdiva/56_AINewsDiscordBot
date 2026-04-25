@@ -1,9 +1,6 @@
 ---
 name: debug
 description: 実装・修正後のデバッグ検証。WebUI、Tauri desktop、Expo mobile、Python処理を変更範囲に応じて確認する。
-user_invocable: true
-trigger: /debug
-arguments: [確認したい内容の説明（省略可）]
 ---
 
 # debug

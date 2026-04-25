@@ -1,9 +1,6 @@
 ---
 name: mobile-debug
 description: Expo/React NativeモバイルアプリをAndroidエミュレーター + ADBでPC完結デバッグする。
-user_invocable: true
-trigger: /mobile-debug
-arguments: [確認したい内容の説明（省略可）]
 ---
 
 # mobile-debug

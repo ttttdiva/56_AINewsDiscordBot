@@ -1,9 +1,6 @@
 ---
 name: ask
 description: 質問・調査・レビューに答える。ファイル変更、ブランチ操作、commit、push、merge はしない。
-user_invocable: true
-trigger: /ask
-argument-hint: [question]
 ---
 
 # ask

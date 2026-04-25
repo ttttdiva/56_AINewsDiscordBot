@@ -1,9 +1,6 @@
 ---
 name: desktop-debug
 description: TauriデスクトップアプリをVite表示、Tauri dev、ビルドで確認する。
-user_invocable: true
-trigger: /desktop-debug
-arguments: [確認したい内容の説明（省略可）]
 ---
 
 # desktop-debug
