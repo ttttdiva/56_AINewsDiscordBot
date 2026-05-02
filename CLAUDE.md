@@ -3,8 +3,8 @@
 ## Codex運用の強制ルール
 
 - Skill、`CLAUDE.md`、`memory-bank/` は UTF-8 として読む。PowerShell で文字化けする場合は `Get-Content -Encoding UTF8` を使う。読めない指示を推測で無視して作業を続けない。
-- `/work` では、作業前に base branch から作業ブランチを作る。`main` / `master` / base branch に直接 commit / push しない。
-- 「push」は作業ブランチの push を意味する。base branch への直接 push ではない。
+- `/work` では、原則として作業前に base branch から作業ブランチを作る。`main` / `master` / base branch に直接 commit / push しない。ただし、ユーザーが今回の依頼で「mainブランチでそのままやっていい」などを明示した場合は、base branch 上での編集・commit・push を許可する。
+- 「push」は通常は作業ブランチの push を意味し、ユーザーが base branch への直接 push を明示した場合だけ base branch への push として扱う。
 - `CLAUDE.md` の一般的な push 指示より、`.agents/skills/work/SKILL.md` のブランチルールを優先する。
 - `/merge` では、対象ブランチ/PRと base branch を確定し、必須検証と必要なビルドを実行してから統合する。
 - リリース対象プロジェクトの `/merge` では、`memory-bank/` と `docs/` のリリース方針に従い、GitHub Release / `latest.json` 更新まで扱う。ユーザーが「releaseなし」と明示した場合だけ省略する。
